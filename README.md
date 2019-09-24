@@ -57,7 +57,6 @@ print(googlebot)
 print(google)
 # -1
 ```
-
 The ```find()``` method finds the first occurrence of the specified value returns the index, otherwise returns -1 if the value is not found.
 
 Knowing this we can create a list with logical operators to return true if the string contains one of the hostnames or false if it doesn't.
@@ -80,20 +79,39 @@ def verify_host_name(host_name):
     return any([host_name.find('googlebot.com') > 0, host_name.find('google.com') > 0])
 ```
 ## Step 3: forward DNS lookup hostname
-Run a forward DNS lookup on the domain name retrieved in step 1. Verify that it is the same as the original accessing IP address from your logs:
+Third, run a forward DNS lookup on the host name retrieved in step 1 to get the IP address. 
 
+Verify that the IP is the same as the original accessing IP address from your logs.
+
+Use the ```socket``` module again to forward lookup the hostname to get the IP address:
+
+```python
+ip = socket.gethostbyname(host_name)
+print(ip)
+# 66.249.79.136 
+```
+Then check to see if the client_ip from log files equals the IP from DNS lookup:
+```python
+print(client_ip == ip)
+# True
+```
+Here's the function I've defined:
 ```python
 def get_bot_ip(host_name):
     return socket.gethostbyname(host_name)
 ```
 ## Bring it together in a Function
-Pull all the steps together into one function:
 
-1. get the host name via reverse DNS on client ip address
-2. check the host name contains googlebot.com or google.com
-3. if the host name does contain googlebot.com or google.com get the bot ip
-4. check if the client ip from logs is the same as reverse ip lookup
+The last step is to build a function that brings all the steps together.
 
+The function needs to:
+
+1. Store the host name as a variable via a reverse DNS on client ip address from log files.
+2. Verify the host name contains googlebot.com or google.com.
+3. If the host name does contain googlebot.com or google.com then get the ip address associated with the host name.
+4. Return True if the client ip from logs is the same as reverse ip lookup, otherwise False.
+
+Here is the final function:
 ```python
 def reverse_dns_lookup(client_ip):
     host_name = get_host_name(client_ip)
