@@ -39,6 +39,8 @@ def reverse_dns_lookup(client_ip):
     verify_google = verify_host_name(host_name)
     if verify_google == True:
         bot_ip = get_bot_ip(host_name)
+    else:
+        bot_ip = False
 
     return client_ip == bot_ip
 ```
