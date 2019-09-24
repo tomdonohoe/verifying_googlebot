@@ -12,8 +12,20 @@ There are three steps outlined by Google in their documentation for verifying Go
 3. Run a forward DNS lookup on the domain name retrieved in step 1 using the host command on the retrieved domain name. Verify that it is the same as the original accessing IP address from your logs.
 
 ## Step 1: reverse DNS lookup
-Run a reverse DNS lookup on the accessing IP address from your logs:
+First, run a reverse DNS lookup on the accessing IP address from the server log files.
 
+Use the ```socket``` module to get the hostname from the IP address:
+```python
+host = socket.gethostbyaddr(client_ip)
+print(host)
+# ('crawl-66-249-79-136.googlebot.com', ['136.79.249.66.in-addr.arpa'], ['66.249.79.136'])
+
+host_name = host[0]
+print(host_name)
+# crawl-66-249-79-136.googlebot.com
+```
+
+Here's the function I've defined:
 ```python
 def get_host_name(client_ip):
     try:
@@ -25,8 +37,44 @@ def get_host_name(client_ip):
     return host_name
 ```
 
+The function will return the hostname of the IP address, otherwise 'no host found'.
+
 ## Step 2: verify the host name
-Verify that the domain name is in either googlebot.com or google.com:
+Second, we must verify that the host name contains either googlebot.com or google.com:
+
+We can use the function above to store the hostname as a variable:
+```python
+dns_host_name = get_host_name(client_ip)
+# 'crawl-66-249-79-136.googlebot.com'
+```
+Then use the string method ```find()``` to check if googlebot.com or google.com are in the string.
+```python
+googlebot = dns_host_name.find('googlebot.com')
+google = dns_host_name.find('google.com')
+
+print(googlebot)
+# 20
+print(google)
+# -1
+```
+
+The ```find()``` method finds the first occurrence of the specified value returns the index, otherwise returns -1 if the value is not found.
+
+Knowing this we can create a list with logical operators to return true if the string contains one of the hostnames or false if it doesn't.
+```python
+check = [dns_host_name.find('googlebot.com') > 0, dns_host_name.find('google.com') > 0]
+print(check)
+# [True, False]
+```
+Finally, we want to verify if the host name contains either googlebot.com or google.com. 
+
+We can use the ``` any() ``` function, which returns True if any item in an iterable are true, otherwise it returns False.
+```python
+is_google = any(check)
+print(is_google)
+# True
+```
+Here's the function I've defined:
 ```python
 def verify_host_name(host_name):
     return any([host_name.find('googlebot.com') > 0, host_name.find('google.com') > 0])
